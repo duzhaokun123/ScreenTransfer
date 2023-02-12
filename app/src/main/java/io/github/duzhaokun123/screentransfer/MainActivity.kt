@@ -12,6 +12,7 @@ import com.google.android.gms.nearby.connection.AdvertisingOptions
 import com.google.android.gms.nearby.connection.ConnectionInfo
 import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback
 import com.google.android.gms.nearby.connection.ConnectionResolution
+import com.google.android.gms.nearby.connection.ConnectionsClient
 import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo
 import com.google.android.gms.nearby.connection.DiscoveryOptions
 import com.google.android.gms.nearby.connection.EndpointDiscoveryCallback
@@ -64,7 +65,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::clas
                 override fun onStream(bytes: ByteArray, flags: Int, timeUs: Long) {
                     Log.d("ScrTsf_RD", "onStream: ${bytes.size}")
 //                    ffmpegDecoder.write(bytes)
-                    appendableByteInputStream.append(ByteArrayInputStream(bytes))
+                    runMain {
+                        baseBinding.tvMessage.text = "${System.currentTimeMillis()} ${bytes.size}"
+                    }
+                    Nearby.getConnectionsClient(this@MainActivity).sendPayload(targetId!!, Payload.fromBytes(bytes))
+//                    appendableByteInputStream.append(ByteArrayInputStream(bytes))
 //                    Nearby.getConnectionsClient(this@MainActivity).sendPayload(targetId!!, Payload.fromStream(ByteArrayInputStream(bytes)))
                 }
             })
@@ -100,27 +105,32 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::clas
 
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
             if (payload.type == Payload.Type.BYTES) {
+                val b = payload.asBytes() ?: return
+                ffmpegDecoder.write(b)
+//                val s = payload.asBytes()!!.toString(Charset.defaultCharset())
                 runMain {
-                    baseBinding.tvMessage.text = payload.asBytes()!!.toString(Charset.defaultCharset())
+                    baseBinding.tvMessage.text = "${System.currentTimeMillis()} ${b.size}"
                 }
+//                if (s == "ping") {
+//                    Nearby.getConnectionsClient(this@MainActivity).sendPayload(endpointId, Payload.fromBytes("pong".toByteArray()))
+//                }
+//                if (s == "pong") {
+//                    runMain {
+//                        baseBinding.tvMessage.text = "pong ${System.currentTimeMillis() - sendTime}"
+//                    }
+//                }
             }
             if (payload.type == Payload.Type.STREAM) {
                 val backgroundThread = runNewThread {
                     val input = payload.asStream()!!.asInputStream()
+                    val buf = ByteArray(100)
                     while (Thread.interrupted().not()) {
                         try {
-                            val availableBytes = input.available()
-                            if (availableBytes > 0) {
-                                val bytes = ByteArray(availableBytes)
-                                if (input.read(bytes) == availableBytes) {
-                                    runMain {
-                                        baseBinding.tvMessage.text = "${System.currentTimeMillis()} $availableBytes"
-                                    }
-                                    Log.d("ScrTsf_RD", "onPayloadReceived: ${bytes.size}")
-//                                    buffer.offer(Tr)
-                                    ffmpegDecoder.write(bytes)
-                                }
+                            val s = input.read(buf)
+                            runMain {
+                                baseBinding.tvMessage.text = "${System.currentTimeMillis()} $s"
                             }
+                            ffmpegDecoder.write(buf, 0, s)
                         } catch (e: IOException) {
                             TipUtil.showTip(this@MainActivity, e)
                             break

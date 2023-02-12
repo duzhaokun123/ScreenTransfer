@@ -19,7 +19,7 @@ class FFmpegDecoder(surface: SurfaceHolder, width: Int, height: Int) : OutputStr
         const val TAG = "FFmpegDecoder"
     }
 
-    val process = FFmpegExe.commandLine("-i", "pipe:", "-f", "rawvideo", "-pix_fmt", "rgb24", "-probesize", "32", "pipe:")
+    val process = FFmpegExe.commandLine("-i", "pipe:", "-f", "rawvideo", "-pix_fmt", "rgb24", "-probesize", "32", "-framerate", "60", "pipe:")
 
     init {
         runNewThread {
