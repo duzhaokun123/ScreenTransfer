@@ -27,26 +27,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("long", "BUILD_TIME", buildTime.toString())
-
-        externalNativeBuild {
-            cmake {
-                targets += "getlinker"
-            }
-        }
     }
     externalNativeBuild {
         cmake {
             path = File(projectDir, "src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
         }
     }
-    packagingOptions {
-        resources.excludes.addAll(
-            arrayOf(
-                "META-INF/**",
-                "kotlin/**"
-            )
-        )
-    }
+//    packagingOptions {
+//        resources.excludes.addAll(
+//            arrayOf(
+//                "META-INF/**",
+//                "kotlin/**"
+//            )
+//        )
+//    }
     signingConfigs {
         create("release") {
             storeFile = file("../releaseKey.jks")
@@ -72,7 +67,7 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
-            sourceSets.getByName("main").java.srcDir(File("build/generated/ksp/release/kotlin"))
+//            sourceSets.getByName("main").java.srcDir(File("build/generated/ksp/release/kotlin"))
         }
         getByName("debug") {
             val minifyEnabled = localProperties.getProperty("minify.enabled", "false")
@@ -142,6 +137,14 @@ dependencies {
 //    implementation("com.google.android.flexbox:flexbox:3.0.0")
 
     implementation("com.google.android.gms:play-services-nearby:18.4.0")
+
+    val ktor_version = "2.2.3"
+    implementation("io.ktor:ktor-server-core:$ktor_version")
+    implementation("io.ktor:ktor-server-cio:$ktor_version")
+    implementation("io.ktor:ktor-server-websockets:$ktor_version")
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    implementation("io.ktor:ktor-client-websockets:$ktor_version")
 }
 
 val optimizeReleaseRes = task("optimizeReleaseRes").doLast {
