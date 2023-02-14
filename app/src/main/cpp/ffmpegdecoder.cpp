@@ -71,7 +71,9 @@ Java_io_github_duzhaokun123_screentransfer_ffmpeg_FFmpegDecoder_nativeWrite(JNIE
                                                                             jlong address,
                                                                             jbyteArray bytes,
                                                                             jint size,
-                                                                            jobject bitmap) {
+                                                                            jobject bitmap,
+                                                                            jint target_width,
+                                                                            jint target_height) {
     auto decoder = (Decoder*)address;
     auto b = env->GetByteArrayElements(bytes, JNI_FALSE);
     auto packet = av_packet_alloc();
@@ -91,20 +93,18 @@ Java_io_github_duzhaokun123_screentransfer_ffmpeg_FFmpegDecoder_nativeWrite(JNIE
     if (frame->format != AV_PIX_FMT_NONE) {
         auto width = frame->width;
         auto height = frame->height;
-        auto rs = av_image_get_buffer_size(AV_PIX_FMT_RGB24, width, height, 1);
+        auto rs = av_image_get_buffer_size(AV_PIX_FMT_RGB24, target_width, target_height, 1);
         auto rgbs = (uint8_t*)malloc(rs);
         auto rgbFrame = av_frame_alloc();
         av_image_fill_arrays(rgbFrame->data, rgbFrame->linesize, (uint8_t*)rgbs, AV_PIX_FMT_RGB24, width, height, 1);
-        rgbFrame->width = width;
-        rgbFrame->height = height;
         auto sc = sws_getContext(width, height, (AVPixelFormat)frame->format,
-                                 width, height, AV_PIX_FMT_RGB24,
+                                 target_width, target_height, AV_PIX_FMT_RGB24,
                                  SWS_BILINEAR, nullptr, nullptr, nullptr);
         sws_scale(sc, frame->data, frame->linesize, 0, height, rgbFrame->data, rgbFrame->linesize);
         sws_freeContext(sc);
         int32_t* bbuf = 0;
         AndroidBitmap_lockPixels(env, bitmap, (void**)&bbuf);
-        for (int i = 0; i < width * height; i++) {
+        for (int i = 0; i < target_width * target_height; i++) {
             //bitmap is AABBGGRR
             bbuf[i] = (0xFF << 24)
                     + (rgbs[i * 3 + 0] << 0)

@@ -7,23 +7,57 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/btn_1"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Advertising" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btn_2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Discovery" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ip:" />
 
-    <Button
-        android:id="@+id/btn_3"
+        <EditText
+            android:id="@+id/et_ip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="127.0.0.1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="port" />
+
+        <EditText
+            android:id="@+id/et_port"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="8043" />
+
+        <TextView
+            android:id="@+id/tv_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ping" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_ping"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ping" />
+
+        <Button
+            android:id="@+id/btn_newDisplay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="new display" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/btn_4"
@@ -32,6 +66,7 @@
         android:text="window" />
 
     <Button
+        android:text="close"
         android:id="@+id/btn_close"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

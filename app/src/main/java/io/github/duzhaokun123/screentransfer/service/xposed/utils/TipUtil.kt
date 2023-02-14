@@ -1,8 +1,9 @@
-package io.github.duzhaokun123.screentransfer.xposed.utils
+package io.github.duzhaokun123.screentransfer.service.xposed.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.Toast
+import io.github.duzhaokun123.androidapptemplate.utils.runMain
 
 @SuppressLint("StaticFieldLeak")
 object TipUtil {
@@ -16,6 +17,8 @@ object TipUtil {
 
 
     fun showToast(msg: String) {
-        Toast.makeText(context, "$prefix$msg", Toast.LENGTH_LONG).show()
+        runMain {
+            Toast.makeText(context, "$prefix$msg", Toast.LENGTH_LONG).show()
+        }
     }
 }

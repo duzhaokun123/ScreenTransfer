@@ -1,4 +1,4 @@
-package io.github.duzhaokun123.screentransfer.xposed.utils
+package io.github.duzhaokun123.screentransfer.service.xposed.utils
 
 import de.robv.android.xposed.XposedBridge
 

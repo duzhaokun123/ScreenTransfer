@@ -1,4 +1,4 @@
-package io.github.duzhaokun123.screentransfer.xposed
+package io.github.duzhaokun123.screentransfer.service.xposed
 
 import android.content.pm.IPackageManager
 import android.os.Binder
@@ -8,7 +8,7 @@ import android.os.Process
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.duzhaokun123.screentransfer.BuildConfig
-import io.github.duzhaokun123.screentransfer.xposed.utils.log
+import io.github.duzhaokun123.screentransfer.service.xposed.utils.log
 
 object BridgeService {
 
@@ -29,7 +29,7 @@ object BridgeService {
 //        } else {
 //            pms.getPackageInfo(BuildConfig.APPLICATION_ID, 0, 0)
 //        }
-//        if (!Utils.verifyAppSignature(appPackage.applicationInfo.sourceDir)) {
+//        if (!Utils.kt.verifyAppSignature(appPackage.applicationInfo.sourceDir)) {
 //            logE(TAG, "Fatal: App signature mismatch")
 //            return
 //        }

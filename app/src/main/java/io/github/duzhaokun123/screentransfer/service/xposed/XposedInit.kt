@@ -1,4 +1,4 @@
-package io.github.duzhaokun123.screentransfer.xposed
+package io.github.duzhaokun123.screentransfer.service.xposed
 
 import android.content.Context
 import android.content.pm.IPackageManager
@@ -13,7 +13,7 @@ import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.duzhaokun123.screentransfer.BuildConfig
-import io.github.duzhaokun123.screentransfer.xposed.utils.log
+import io.github.duzhaokun123.screentransfer.service.xposed.utils.log
 
 private const val TAG = "ScrTsf_XposedInit"
 

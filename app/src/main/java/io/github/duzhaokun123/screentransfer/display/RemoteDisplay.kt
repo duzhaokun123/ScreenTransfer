@@ -7,18 +7,48 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.util.Log
 import io.github.duzhaokun123.androidapptemplate.utils.runNewThread
-import io.github.duzhaokun123.screentransfer.xposed.IVideoStreamCallback
-import io.github.duzhaokun123.screentransfer.xposed.utils.Instances
+import io.github.duzhaokun123.screentransfer.service.xposed.utils.Instances
+import io.github.duzhaokun123.screentransfer.service.xposed.utils.TipUtil
+import io.github.duzhaokun123.screentransfer.xposed.IByteArraySender
+import io.github.duzhaokun123.screentransfer.xposed.IStreamCallback
+import java.util.concurrent.LinkedBlockingQueue
 
-class RemoteDisplay(width: Int, height: Int, densityDpi: Int, iVideoStreamCallback: IVideoStreamCallback) {
+class RemoteDisplay(width: Int, height: Int, densityDpi: Int) {
     companion object {
         const val TAG = "ScrTsf_RD"
         const val DEFAULT_I_FRAME_INTERVAL = 10 // seconds
         const val REPEAT_FRAME_DELAY_US = 100_000L // repeat after 100ms
     }
 
+    var closed = false
     lateinit var virtualDisplay: VirtualDisplay
     val codec: MediaCodec
+    val virtualDisplayId: Int
+        get() = virtualDisplay.display.displayId
+    var videoFrameQueue = LinkedBlockingQueue<ByteArray>()
+    val streamCallback = object : IStreamCallback.Stub() {
+        override fun onVideoFrameSenderAvailable(sender: IByteArraySender) {
+            runNewThread {
+                while (closed.not()) {
+                    val frame = videoFrameQueue.take()
+                    Log.d(TAG, "onVideoFrameSenderAvailable: here2 ${frame.size}")
+                    sender.send(frame)
+                }
+            }
+        }
+
+        override fun onEvent(event: ByteArray) {
+
+        }
+
+        override fun onClose() {
+            close()
+        }
+
+        override fun getId(): Int {
+            return virtualDisplayId
+        }
+    }
 
     init {
         codec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_HEVC)
@@ -41,9 +71,10 @@ class RemoteDisplay(width: Int, height: Int, densityDpi: Int, iVideoStreamCallba
                     val array = ByteArray(buffer.remaining())
                     buffer.get(array)
                     runCatching {
-                        iVideoStreamCallback.onStream(array, info.flags, info.presentationTimeUs)
+                        videoFrameQueue.put(array)
                         codec.releaseOutputBuffer(index, false)
                     }.onFailure {
+                        Log.e(TAG, "onOutputBufferAvailable: ", it)
                         virtualDisplay.release()
                         codec.release()
                     }
@@ -56,8 +87,14 @@ class RemoteDisplay(width: Int, height: Int, densityDpi: Int, iVideoStreamCallba
         }
         codec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         virtualDisplay = Instances.displayManager.createVirtualDisplay("ScrTsf${System.currentTimeMillis()}", width, height, densityDpi, codec.createInputSurface(), 1668)
-        Log.d(TAG, "init: ${virtualDisplay.display.displayId}")
+        TipUtil.showToast("display $virtualDisplayId created")
         codec.start()
+    }
 
+    fun close() {
+        closed = true
+        virtualDisplay.release()
+        codec.stop()
+        codec.release()
     }
 }

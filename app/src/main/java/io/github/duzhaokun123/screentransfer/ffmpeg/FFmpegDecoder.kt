@@ -18,12 +18,12 @@ class FFmpegDecoder(val width: Int, val height: Int, private val onNewFrame: ((f
     val address = nativeInit()
 
     fun write(bytes: ByteArray) {
-        nativeWrite(address, bytes, bytes.size, Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888))
+        nativeWrite(address, bytes, bytes.size, Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888), width, height)
     }
 
     private external fun nativeInit(): Long
     private external fun nativeRelease(address: Long)
-    private external fun nativeWrite(address: Long, bytes: ByteArray, size: Int, bitmap: Bitmap)
+    private external fun nativeWrite(address: Long, bytes: ByteArray, size: Int, bitmap: Bitmap, targetWidth: Int, targetHeight: Int)
 
     fun release() {
         nativeRelease(address)
