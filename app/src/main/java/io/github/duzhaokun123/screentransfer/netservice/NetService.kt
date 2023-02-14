@@ -2,6 +2,7 @@ package io.github.duzhaokun123.screentransfer.netservice
 
 import io.github.duzhaokun123.androidapptemplate.utils.runNewThread
 import io.github.duzhaokun123.screentransfer.BuildConfig
+import io.github.duzhaokun123.screentransfer.ffmpeg.FFmpegDecoder
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
@@ -19,6 +20,8 @@ import io.ktor.server.websocket.webSocket
 import io.ktor.websocket.*
 
 class NetService {
+    var ffmpegDecoder: FFmpegDecoder? = null
+
     init {
         runNewThread {
             embeddedServer(CIO, port = 8043) {
@@ -31,14 +34,14 @@ class NetService {
                         call.respondText("pong")
                     }
                     post("/video") {
-//                        ffmpegDecoder?.write(call.receive<ByteArray>())
+                        ffmpegDecoder?.write(call.receive())
                         call.respond("ok")
                     }
                     webSocket("/video") {
                         send("ok")
                         for (frame in incoming) {
                             frame as? Frame.Binary ?: continue
-//                            ffmpegDecoder?.write(frame.data)
+                            ffmpegDecoder?.write(frame.data)
                         }
                     }
                     webSocket("/echo") {

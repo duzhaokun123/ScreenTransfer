@@ -136,8 +136,6 @@ dependencies {
     //FlexboxLayout
 //    implementation("com.google.android.flexbox:flexbox:3.0.0")
 
-    implementation("com.google.android.gms:play-services-nearby:18.4.0")
-
     val ktor_version = "2.2.3"
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-cio:$ktor_version")

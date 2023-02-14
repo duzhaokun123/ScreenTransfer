@@ -3,3 +3,4 @@
 //
 
 #include "Decoder.h"
+#include "jni.h"

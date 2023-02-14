@@ -6,11 +6,9 @@ import android.media.MediaCodec.BufferInfo
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.util.Log
-import io.github.duzhaokun123.androidapptemplate.utils.runIO
 import io.github.duzhaokun123.androidapptemplate.utils.runNewThread
 import io.github.duzhaokun123.screentransfer.xposed.IVideoStreamCallback
 import io.github.duzhaokun123.screentransfer.xposed.utils.Instances
-import java.io.File
 
 class RemoteDisplay(width: Int, height: Int, densityDpi: Int, iVideoStreamCallback: IVideoStreamCallback) {
     companion object {
@@ -32,9 +30,7 @@ class RemoteDisplay(width: Int, height: Int, densityDpi: Int, iVideoStreamCallba
         mediaFormat.setLong(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, REPEAT_FRAME_DELAY_US)
         runNewThread {
             codec.setCallback(object : MediaCodec.Callback() {
-                override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-
-                }
+                override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {}
 
                 override fun onOutputBufferAvailable(
                     codec: MediaCodec,
@@ -53,13 +49,9 @@ class RemoteDisplay(width: Int, height: Int, densityDpi: Int, iVideoStreamCallba
                     }
                 }
 
-                override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
+                override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {}
 
-                }
-
-                override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
-
-                }
+                override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {}
             })
         }
         codec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
