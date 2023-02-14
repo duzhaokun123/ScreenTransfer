@@ -2,7 +2,7 @@ package io.github.duzhaokun123.screentransfer.service
 
 import io.github.duzhaokun123.androidapptemplate.utils.runNewThread
 import io.github.duzhaokun123.screentransfer.BuildConfig
-import io.github.duzhaokun123.screentransfer.display.RemoteDisplay
+import io.github.duzhaokun123.screentransfer.service.display.RemoteDisplay
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.application.install
@@ -168,8 +168,12 @@ class NetService {
     }
 
     interface StreamCallback {
+        companion object {
+            const val EVENT_TYPE_MOTION: Byte = 0
+        }
+
         fun onVideoFrameSenderAvailable(sender: ByteArraySender)
-        fun onEvent(event: ByteArray)
+        fun onEvent(bytes: ByteArray)
         fun onClose()
 
         fun getId(): Int

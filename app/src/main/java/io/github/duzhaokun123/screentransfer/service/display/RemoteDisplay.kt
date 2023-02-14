@@ -1,4 +1,4 @@
-package io.github.duzhaokun123.screentransfer.display
+package io.github.duzhaokun123.screentransfer.service.display
 
 import android.hardware.display.VirtualDisplay
 import android.media.MediaCodec
@@ -6,10 +6,15 @@ import android.media.MediaCodec.BufferInfo
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.util.Log
+import android.view.MotionEvent
+import com.github.kyuubiran.ezxhelper.utils.argTypes
+import com.github.kyuubiran.ezxhelper.utils.args
+import com.github.kyuubiran.ezxhelper.utils.invokeMethod
 import io.github.duzhaokun123.androidapptemplate.utils.runNewThread
 import io.github.duzhaokun123.screentransfer.service.NetService
 import io.github.duzhaokun123.screentransfer.service.xposed.utils.Instances
 import io.github.duzhaokun123.screentransfer.service.xposed.utils.TipUtil
+import io.github.duzhaokun123.screentransfer.utils.ParcelableUtil
 import java.util.concurrent.LinkedBlockingQueue
 
 class RemoteDisplay(width: Int, height: Int, densityDpi: Int) {
@@ -30,13 +35,21 @@ class RemoteDisplay(width: Int, height: Int, densityDpi: Int) {
             runNewThread {
                 while (closed.not()) {
                     val frame = videoFrameQueue.take()
-                    Log.d(TAG, "onVideoFrameSenderAvailable: here2 ${frame.size}")
                     sender.send(frame)
                 }
             }
         }
 
-        override fun onEvent(event: ByteArray) {
+        override fun onEvent(bytes: ByteArray) {
+            val type = bytes[0]
+            val data = bytes.copyOfRange(1, bytes.size)
+            when(type) {
+                NetService.StreamCallback.EVENT_TYPE_MOTION -> {
+                    val event = ParcelableUtil.unmarshall(data, MotionEvent.CREATOR)
+                    event.invokeMethod("setDisplayId", args(virtualDisplayId), argTypes(Integer.TYPE))
+                    Instances.inputManager.injectInputEvent(event, 0)
+                }
+            }
 
         }
 
