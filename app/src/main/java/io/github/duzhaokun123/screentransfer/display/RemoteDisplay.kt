@@ -7,10 +7,9 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.util.Log
 import io.github.duzhaokun123.androidapptemplate.utils.runNewThread
+import io.github.duzhaokun123.screentransfer.service.NetService
 import io.github.duzhaokun123.screentransfer.service.xposed.utils.Instances
 import io.github.duzhaokun123.screentransfer.service.xposed.utils.TipUtil
-import io.github.duzhaokun123.screentransfer.xposed.IByteArraySender
-import io.github.duzhaokun123.screentransfer.xposed.IStreamCallback
 import java.util.concurrent.LinkedBlockingQueue
 
 class RemoteDisplay(width: Int, height: Int, densityDpi: Int) {
@@ -26,8 +25,8 @@ class RemoteDisplay(width: Int, height: Int, densityDpi: Int) {
     val virtualDisplayId: Int
         get() = virtualDisplay.display.displayId
     var videoFrameQueue = LinkedBlockingQueue<ByteArray>()
-    val streamCallback = object : IStreamCallback.Stub() {
-        override fun onVideoFrameSenderAvailable(sender: IByteArraySender) {
+    val streamCallback = object : NetService.StreamCallback {
+        override fun onVideoFrameSenderAvailable(sender: NetService.ByteArraySender) {
             runNewThread {
                 while (closed.not()) {
                     val frame = videoFrameQueue.take()

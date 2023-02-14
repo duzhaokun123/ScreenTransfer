@@ -6,7 +6,6 @@ import android.os.RemoteException
 import android.os.ServiceManager
 import android.util.Log
 import io.github.duzhaokun123.screentransfer.xposed.IScrTsfManager
-import io.github.duzhaokun123.screentransfer.xposed.IStreamCallback
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
@@ -43,10 +42,6 @@ object ScrTsfManagerHelper : IScrTsfManager, IBinder.DeathRecipient {
 
     override fun getBuildTime(): Long {
         return getService()?.buildTime ?: 0
-    }
-
-    override fun createDisplay(width: Int, height: Int, densityDpi: Int): IStreamCallback? {
-        return getService()?.createDisplay(width, height, densityDpi)
     }
 
     private fun getService(): IScrTsfManager? {

@@ -1,13 +1,8 @@
 package io.github.duzhaokun123.screentransfer.service
 
-import android.util.Log
-import io.github.duzhaokun123.androidapptemplate.utils.runIO
-import io.github.duzhaokun123.androidapptemplate.utils.runMain
 import io.github.duzhaokun123.androidapptemplate.utils.runNewThread
 import io.github.duzhaokun123.screentransfer.BuildConfig
-import io.github.duzhaokun123.screentransfer.service.xposed.ScrTsfManagerHelper
-import io.github.duzhaokun123.screentransfer.xposed.IByteArraySender
-import io.github.duzhaokun123.screentransfer.xposed.IStreamCallback
+import io.github.duzhaokun123.screentransfer.display.RemoteDisplay
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.application.install
@@ -26,14 +21,11 @@ import io.ktor.websocket.close
 import io.ktor.websocket.readBytes
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.LinkedTransferQueue
 
 class NetService {
-    val streamCallbacks = mutableMapOf<String, IStreamCallback>()
+    val streamCallbacks = mutableMapOf<String, StreamCallback>()
 
     val videoFrameCaches = mutableMapOf<String, Channel<ByteArray>>()
 
@@ -88,46 +80,7 @@ class NetService {
                             send(videoFrameCache.receive())
                         }
                     }
-//                    webSocket("/video/{id}") {
-//                        val id = call.parameters["id"]
-//                        val streamCallback = streamCallbacks[id]
-//                        if (streamCallback == null) {
-//                            close(
-//                                CloseReason(
-//                                    CloseReason.Codes.CANNOT_ACCEPT,
-//                                    "no callback for $id"
-//                                )
-//                            )
-//                            return@webSocket
-//                        }
-//                        send("$id video ok")
-//                        streamCallback.onVideoFrameSenderAvailable( object : IByteArraySender.Stub() {
-//        val q = Channel<ByteArray>()
-//
-//                            init {
-//                                runNewThread {
-//                                    runBlocking {
-//                                        while (true) {
-//                                            val f = q.receive()
-//                                            Log.d("ScrTsf_RD", "bbb: ${f.size}")
-//                                            runCatching {
-//                                                send(f)
-//                                            }.onFailure {
-//                                                Log.e("ScrTsf_RD", "aaa:", it)
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//
-//                            override fun send(bytes: ByteArray) {
-//                                runBlocking {
-//                                    Log.d("ScrTsf_RD", "ccc: ${bytes.size}")
-//                                    q.send(bytes)
-//                                }
-//                            }
-//                        })
-//                    }
+
                     webSocket("/event/{id}") {
                         val id = call.parameters["id"]
                         val streamCallback = streamCallbacks[id]
@@ -185,7 +138,7 @@ class NetService {
         }
     }
 
-    fun regStreamCallback(id: String, streamCallback: IStreamCallback) {
+    fun regStreamCallback(id: String, streamCallback: StreamCallback) {
         streamCallbacks[id] = streamCallback
     }
 
@@ -195,12 +148,12 @@ class NetService {
 
     fun onNewDisplay(width: Int, height: Int, densityDpi: Int): String? {
         try {
-            val d = ScrTsfManagerHelper.createDisplay(width, height, densityDpi) ?: return null
-            val id = d.id.toString()
+            val d = RemoteDisplay(width, height, densityDpi).streamCallback
+            val id = d.getId().toString()
             regStreamCallback(id, d)
             val channel = Channel<ByteArray>()
             videoFrameCaches[id] = channel
-            d.onVideoFrameSenderAvailable(object : IByteArraySender.Stub() {
+            d.onVideoFrameSenderAvailable(object : ByteArraySender {
                 override fun send(bytes: ByteArray) {
                     runBlocking {
                         channel.send(bytes)
@@ -212,5 +165,17 @@ class NetService {
             e.printStackTrace()
             return null
         }
+    }
+
+    interface StreamCallback {
+        fun onVideoFrameSenderAvailable(sender: ByteArraySender)
+        fun onEvent(event: ByteArray)
+        fun onClose()
+
+        fun getId(): Int
+    }
+
+    interface ByteArraySender {
+        fun send(bytes: ByteArray)
     }
 }
